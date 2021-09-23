@@ -6,6 +6,8 @@ import weakref
 import numpy as np
 from numpy import ndarray
 
+from . import Config
+
 
 def as_array(x) -> ndarray:
     if np.isscalar(x):
@@ -81,10 +83,12 @@ class Function(metaclass=ABCMeta):
         if not isinstance(ys, tuple):
             ys = (ys,)
         outputs = [Variable(as_array(y)) for y in ys]
-        for output in outputs:
-            output.set_creator(self)
-        self.inputs = inputs
-        self.outputs = [weakref.ref(output) for output in outputs]
+
+        if Config.train:
+            for output in outputs:
+                output.set_creator(self)
+            self.inputs = inputs
+            self.outputs = [weakref.ref(output) for output in outputs]
 
         return outputs if len(outputs) > 1 else outputs[0]
 
