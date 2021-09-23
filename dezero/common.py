@@ -1,6 +1,6 @@
 from _weakref import ReferenceType
 from abc import ABCMeta, abstractmethod
-from typing import List, Tuple, Optional
+from typing import List, Optional
 import weakref
 
 import numpy as np
@@ -16,6 +16,8 @@ def as_array(x) -> ndarray:
 
 
 class Variable:
+    __array_priority__ = 200
+
     name: Optional[str]
     grad: Optional[ndarray]
     generation: int
@@ -98,14 +100,19 @@ class Variable:
                     y().clear_grad()
 
 
+def as_variable(obj):
+    if isinstance(obj, Variable):
+        return obj
+    return Variable(obj)
+
+
 class Function(metaclass=ABCMeta):
-    inputs: Optional[Tuple[Variable]]
+    inputs: Optional[List[Variable]]
     outputs: Optional[List[ReferenceType[Variable]]]
-    generation: int
+    generation: Optional[int]
 
-    def __call__(self, *inputs: Variable):
-        self.generation = max([x.generation for x in inputs])
-
+    def __call__(self, *inputs):
+        inputs = [as_variable(x) for x in inputs]
         xs = [x.data for x in inputs]
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):
@@ -113,6 +120,7 @@ class Function(metaclass=ABCMeta):
         outputs = [Variable(as_array(y)) for y in ys]
 
         if Config.train:
+            self.generation = max([x.generation for x in inputs])
             for output in outputs:
                 output.set_creator(self)
             self.inputs = inputs

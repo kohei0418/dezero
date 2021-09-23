@@ -22,6 +22,21 @@ class TestVariable(unittest.TestCase):
     def test_overloaded_operators(self):
         a = Variable(np.array(3.0))
         b = Variable(np.array(2.0))
-        c = Variable(np.array(1.0))
+        c = np.array(1.0)
         y = a * b + c
         self.assertEqual(np.array(7.0), y.data)
+
+    def test_with_constants(self):
+        x = Variable(np.array(2.0))
+        y0 = x + 3.0
+        y1 = 3.0 + x
+        y2 = np.array([3.0]) + x
+        z0 = x * 3.0
+        z1 = 3.0 * x
+        z2 = np.array([3.0]) * x
+        self.assertEqual(np.array(5.0), y0.data)
+        self.assertEqual(np.array(5.0), y1.data)
+        self.assertEqual(np.array(5.0), y2.data)
+        self.assertEqual(np.array(6.0), z0.data)
+        self.assertEqual(np.array(6.0), z1.data)
+        self.assertEqual(np.array(6.0), z2.data)

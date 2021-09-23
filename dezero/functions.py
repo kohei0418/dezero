@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import ndarray
 
-from .common import Function, Variable
+from .common import as_array, Function, Variable
 
 
 class Add(Function):
@@ -44,11 +44,11 @@ class Exp(Function):
 
 
 def add(x0, x1):
-    return Add()(x0, x1)
+    return Add()(x0, as_array(x1))
 
 
 def mul(x0, x1):
-    return Mul()(x0, x1)
+    return Mul()(x0, as_array(x1))
 
 
 def square(x):
@@ -59,5 +59,7 @@ def exp(x):
     return Exp()(x)
 
 
-Variable.__mul__ = mul
 Variable.__add__ = add
+Variable.__radd__ = add
+Variable.__mul__ = mul
+Variable.__rmul__ = mul
