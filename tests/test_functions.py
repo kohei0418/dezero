@@ -18,6 +18,13 @@ class TestAdd(unittest.TestCase):
         self.assertEqual(np.array(1.0), x0.grad)
         self.assertEqual(np.array(1.0), x1.grad)
 
+    def test_using_same_inputs(self):
+        x0 = Variable(np.array(2.0))
+        y = add(x0, x0)
+        y.backward()
+        self.assertEqual(np.array(4.0), y.data)
+        self.assertEqual(np.array(2.0), x0.grad)
+
 
 class TestSquare(unittest.TestCase):
 
