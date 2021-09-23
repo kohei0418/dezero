@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import ndarray
 
-from common import Function
+from .common import Function, Variable
 
 
 class Square(Function):
@@ -22,3 +22,11 @@ class Exp(Function):
     def backward(self, gy: ndarray) -> ndarray:
         x: ndarray = self.input.data
         return np.exp(x) * gy
+
+
+def square(x: Variable) -> Variable:
+    return Square()(x)
+
+
+def exp(x: Variable) -> Variable:
+    return Exp()(x)
