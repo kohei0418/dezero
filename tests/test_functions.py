@@ -47,9 +47,10 @@ class TestAdd(unittest.TestCase):
 class TestSquare(unittest.TestCase):
 
     def test_forward(self):
-        x = Variable(np.array(2.0))
+        x = Variable(np.array(2.0), name='x')
         y = square(x)
         expected = np.array(4.0)
+        self.assertEqual('x', x.name)
         self.assertEqual(expected, y.data)
 
     def test_backward(self):

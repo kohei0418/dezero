@@ -16,14 +16,16 @@ def as_array(x) -> ndarray:
 
 
 class Variable:
+    name: Optional[str]
     grad: Optional[ndarray]
     generation: int
 
-    def __init__(self, data: ndarray):
+    def __init__(self, data: ndarray, name: Optional[str] = None):
         if data is not None and not isinstance(data, ndarray):
             raise TypeError('{} is not supported input type'.format(type(data)))
 
         self.data = data
+        self.name = name
         self.grad = None
         self.creator = None
         self.generation = 0
