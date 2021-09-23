@@ -13,6 +13,7 @@ def as_array(x) -> ndarray:
 
 class Variable:
     grad: Optional[ndarray]
+    generation: int
 
     def __init__(self, data: ndarray):
         if data is not None and not isinstance(data, ndarray):
@@ -21,9 +22,11 @@ class Variable:
         self.data = data
         self.grad = None
         self.creator = None
+        self.generation = 0
 
     def set_creator(self, func):
         self.creator = func
+        self.generation = func.generation + 1
 
     def clear_grad(self):
         self.grad = None
@@ -32,7 +35,16 @@ class Variable:
         if self.grad is None:
             self.grad = np.ones_like(self.data)
 
-        functions = [self.creator]
+        functions = []
+        seen = set()
+
+        def add_function(g: Function):
+            if g not in seen:
+                functions.append(g)
+                seen.add(g)
+                functions.sort(key=lambda h: h.generation)
+        add_function(self.creator)
+
         while functions:
             f = functions.pop()
             gys = [output.grad for output in f.outputs]
@@ -47,14 +59,17 @@ class Variable:
                     x.grad = x.grad + gx
 
                 if x.creator is not None:
-                    functions.append(x.creator)
+                    add_function(x.creator)
 
 
 class Function(metaclass=ABCMeta):
     inputs: Optional[Tuple[Variable]]
     outputs: Optional[List[Variable]]
+    generation: int
 
     def __call__(self, *inputs: Variable):
+        self.generation = max([x.generation for x in inputs])
+
         xs = [x.data for x in inputs]
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):

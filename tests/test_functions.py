@@ -60,3 +60,14 @@ class TestSquare(unittest.TestCase):
         y.backward()
         num_grad = numerical_diff(Square(), x)
         self.assertTrue(np.allclose(num_grad, x.grad))
+
+
+class TestTopologicalOrder(unittest.TestCase):
+
+    def test_forward_backward(self):
+        x = Variable(np.array(2.0))
+        a = square(x)
+        y = add(square(a), square(a))
+        y.backward()
+        self.assertTrue(np.array(32.0), y.data)
+        self.assertEqual(np.array(64.0), x.grad)
