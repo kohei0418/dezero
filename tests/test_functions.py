@@ -4,10 +4,22 @@ import numpy as np
 
 from dezero.common import Variable
 from dezero.diff import numerical_diff
-from dezero.functions import square, Square
+from dezero.functions import add, square, Square
 
 
-class SquareTest(unittest.TestCase):
+class TestAdd(unittest.TestCase):
+
+    def test_forward_backward(self):
+        x0 = Variable(np.array(2.0))
+        x1 = Variable(np.array(3.0))
+        y = add(x0, x1)
+        y.backward()
+        self.assertEqual(np.array(5.0), y.data)
+        self.assertEqual(np.array(1.0), x0.grad)
+        self.assertEqual(np.array(1.0), x1.grad)
+
+
+class TestSquare(unittest.TestCase):
 
     def test_forward(self):
         x = Variable(np.array(2.0))

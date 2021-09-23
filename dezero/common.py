@@ -1,5 +1,5 @@
-import typing
 from abc import ABCMeta, abstractmethod
+from typing import List, Tuple, Optional
 
 import numpy as np
 from numpy import ndarray
@@ -12,7 +12,7 @@ def as_array(x) -> ndarray:
 
 
 class Variable:
-    grad: typing.Optional[ndarray]
+    grad: Optional[ndarray]
 
     def __init__(self, data: ndarray):
         if data is not None and not isinstance(data, ndarray):
@@ -32,28 +32,38 @@ class Variable:
         functions = [self.creator]
         while functions:
             f = functions.pop()
-            x, y = f.input, f.output
-            x.grad = f.backward(y.grad)
-            if x.creator is not None:
-                functions.append(x.creator)
+            gys = [output.grad for output in f.outputs]
+            gxs = f.backward(*gys)
+            if not isinstance(gxs, tuple):
+                gxs = (gxs,)
+
+            for x, gx in zip(f.inputs, gxs):
+                x.grad = gx
+                if x.creator is not None:
+                    functions.append(x.creator)
 
 
 class Function(metaclass=ABCMeta):
-    input: typing.Optional[Variable]
-    output: typing.Optional[Variable]
+    inputs: Optional[Tuple[Variable]]
+    outputs: Optional[List[Variable]]
 
-    def __call__(self, input: Variable):
-        self.input = input
-        y = self.forward(input.data)
-        output = Variable(as_array(y))
-        output.set_creator(self)
-        self.output = output
-        return output
+    def __call__(self, *inputs: Variable):
+        xs = [x.data for x in inputs]
+        ys = self.forward(*xs)
+        if not isinstance(ys, tuple):
+            ys = (ys,)
+        outputs = [Variable(as_array(y)) for y in ys]
+        for output in outputs:
+            output.set_creator(self)
+        self.inputs = inputs
+        self.outputs = outputs
+
+        return outputs if len(outputs) > 1 else outputs[0]
 
     @abstractmethod
-    def forward(self, x: ndarray) -> ndarray:
+    def forward(self, *xs: Variable):
         pass
 
     @abstractmethod
-    def backward(self, gy: ndarray) -> ndarray:
+    def backward(self, *gys: Variable):
         pass
