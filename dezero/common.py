@@ -1,5 +1,7 @@
+from _weakref import ReferenceType
 from abc import ABCMeta, abstractmethod
 from typing import List, Tuple, Optional
+import weakref
 
 import numpy as np
 from numpy import ndarray
@@ -47,7 +49,7 @@ class Variable:
 
         while functions:
             f = functions.pop()
-            gys = [output.grad for output in f.outputs]
+            gys = [output().grad for output in f.outputs]
             gxs = f.backward(*gys)
             if not isinstance(gxs, tuple):
                 gxs = (gxs,)
@@ -64,7 +66,7 @@ class Variable:
 
 class Function(metaclass=ABCMeta):
     inputs: Optional[Tuple[Variable]]
-    outputs: Optional[List[Variable]]
+    outputs: Optional[List[ReferenceType[Variable]]]
     generation: int
 
     def __call__(self, *inputs: Variable):
@@ -78,7 +80,7 @@ class Function(metaclass=ABCMeta):
         for output in outputs:
             output.set_creator(self)
         self.inputs = inputs
-        self.outputs = outputs
+        self.outputs = [weakref.ref(output) for output in outputs]
 
         return outputs if len(outputs) > 1 else outputs[0]
 
