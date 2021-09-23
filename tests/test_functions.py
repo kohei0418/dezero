@@ -5,7 +5,7 @@ import numpy as np
 import dezero
 from dezero.common import Variable
 from dezero.diff import numerical_diff
-from dezero.functions import add, square, Square
+from dezero.functions import add, mul, square, Square
 
 
 class TestAdd(unittest.TestCase):
@@ -42,6 +42,19 @@ class TestAdd(unittest.TestCase):
             y.backward()
         self.assertEqual(np.array(6.0), y.data)
         self.assertEqual(np.array(3.0), x0.grad)
+
+
+class TestMul(unittest.TestCase):
+
+    def test_forward_backward(self):
+        x0 = Variable(np.array(2.0))
+        x1 = Variable(np.array(3.0))
+        with dezero.train():
+            y = mul(x0, x1)
+            y.backward()
+        self.assertEqual(np.array(6.0), y.data)
+        self.assertEqual(np.array(3.0), x0.grad)
+        self.assertEqual(np.array(2.0), x1.grad)
 
 
 class TestSquare(unittest.TestCase):
