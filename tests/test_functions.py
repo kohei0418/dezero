@@ -69,5 +69,17 @@ class TestTopologicalOrder(unittest.TestCase):
         a = square(x)
         y = add(square(a), square(a))
         y.backward()
-        self.assertTrue(np.array(32.0), y.data)
+        self.assertEqual(np.array(32.0), y.data)
         self.assertEqual(np.array(64.0), x.grad)
+
+    def test_gradients_of_intermediate_layers(self):
+        x0 = Variable(np.array(1.0))
+        x1 = Variable(np.array(1.0))
+        t = add(x0, x1)
+        y = add(x0, t)
+        y.backward()
+        self.assertEqual(np.array(3.0), y.data)
+        self.assertIsNone(y.grad)
+        self.assertIsNone(t.grad)
+        self.assertEqual(np.array(2.0), x0.grad)
+        self.assertEqual(np.array(1.0), x1.grad)
