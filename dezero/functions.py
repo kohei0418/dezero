@@ -43,17 +43,21 @@ class Exp(Function):
         return np.exp(x) * gy
 
 
-def add(x0: Variable, x1: Variable) -> Variable:
+def add(x0, x1):
     return Add()(x0, x1)
 
 
-def mul(x0: Variable, x1: Variable) -> Variable:
+def mul(x0, x1):
     return Mul()(x0, x1)
 
 
-def square(x: Variable) -> Variable:
+def square(x):
     return Square()(x)
 
 
-def exp(x: Variable) -> Variable:
+def exp(x):
     return Exp()(x)
+
+
+Variable.__mul__ = mul
+Variable.__add__ = add

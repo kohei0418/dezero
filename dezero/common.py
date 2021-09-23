@@ -70,7 +70,7 @@ class Variable:
         functions = []
         seen = set()
 
-        def add_function(g: Function):
+        def add_function(g):
             if g not in seen:
                 functions.append(g)
                 seen.add(g)
