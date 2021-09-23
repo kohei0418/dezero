@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 
 from dezero.common import Variable
+import dezero.functions
 
 
 class TestVariable(unittest.TestCase):
@@ -23,8 +24,8 @@ class TestVariable(unittest.TestCase):
         a = Variable(np.array(3.0))
         b = Variable(np.array(2.0))
         c = np.array(1.0)
-        y = a * b + c
-        self.assertEqual(np.array(7.0), y.data)
+        y = (-a / 2.0) ** 3.0 * (b - 0.5) + c
+        self.assertEqual(np.array((-3.0 / 2.0) ** 3 * (2.0 - 0.5) + 1.0), y.data)
 
     def test_with_constants(self):
         x = Variable(np.array(2.0))
