@@ -1,12 +1,12 @@
+import weakref
 from _weakref import ReferenceType
 from abc import ABCMeta, abstractmethod
-from typing import List, Optional
-import weakref
+from typing import Optional, List
 
 import numpy as np
 from numpy import ndarray
 
-from . import Config
+from dezero import Config
 
 
 def as_array(x) -> ndarray:
@@ -135,3 +135,123 @@ class Function(metaclass=ABCMeta):
     @abstractmethod
     def backward(self, *gys: Variable):
         pass
+
+
+class Add(Function):
+
+    def forward(self, x0, x1):
+        return x0 + x1
+
+    def backward(self, gy):
+        return gy, gy
+
+
+class Sub(Function):
+
+    def forward(self, x0, x1):
+        return x0 - x1
+
+    def backward(self, gy):
+        return gy, -gy
+
+
+class Mul(Function):
+
+    def forward(self, x0, x1):
+        return x0 * x1
+
+    def backward(self, gy):
+        x0, x1 = self.inputs[0].data, self.inputs[1].data
+        return gy * x1, gy * x0
+
+
+class Div(Function):
+
+    def forward(self, x0, x1):
+        return x0 / x1
+
+    def backward(self, gy):
+        x0, x1 = self.inputs[0].data, self.inputs[1].data
+        return gy / x1, gy * (-x0 / x1 ** 2)
+
+
+class Neg(Function):
+
+    def forward(self, x):
+        return -x
+
+    def backward(self, gy):
+        return -gy
+
+
+class Pow(Function):
+
+    def __init__(self, c):
+        self.c = c
+
+    def forward(self, x):
+        return x ** self.c
+
+    def backward(self, gy):
+        x = self.inputs[0].data
+        return self.c * x ** (self.c - 1) * gy
+
+
+class Square(Function):
+
+    def forward(self, x):
+        return x ** 2
+
+    def backward(self, gy):
+        x: ndarray = self.inputs[0].data
+        return 2 * x * gy
+
+
+class Exp(Function):
+
+    def forward(self, x):
+        return np.exp(x)
+
+    def backward(self, gy):
+        x: ndarray = self.inputs[0].data
+        return np.exp(x) * gy
+
+
+def add(x0, x1):
+    return Add()(x0, as_array(x1))
+
+
+def sub(x0, x1):
+    return Sub()(x0, as_array(x1))
+
+
+def rsub(x0, x1):
+    return Sub()(as_array(x1), x0)
+
+
+def mul(x0, x1):
+    return Mul()(x0, as_array(x1))
+
+
+def div(x0, x1):
+    return Div()(x0, as_array(x1))
+
+
+def rdiv(x0, x1):
+    return Div()(as_array(x1), x0)
+
+
+def neg(x):
+    return Neg()(x)
+
+
+def pow(x, c):
+    return Pow(c)(x)
+
+
+def square(x):
+    return Square()(x)
+
+
+def exp(x):
+    return Exp()(x)

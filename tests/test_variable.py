@@ -2,8 +2,7 @@ import unittest
 
 import numpy as np
 
-from dezero.common import Variable
-import dezero.functions
+from dezero import Variable
 
 
 class TestVariable(unittest.TestCase):

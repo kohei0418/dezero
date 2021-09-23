@@ -1,6 +1,6 @@
 from numpy import ndarray
 
-from .common import Function, Variable
+from .core_simple import Variable, Function
 
 
 def numerical_diff(f: Function, x: Variable, eps: float=1e-4) -> ndarray:

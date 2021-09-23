@@ -2,10 +2,8 @@ import unittest
 
 import numpy as np
 
-import dezero
-from dezero.common import Variable
+from dezero import add, mul, square, train, Square, Variable
 from dezero.diff import numerical_diff
-from dezero.functions import add, mul, square, Square
 
 
 class TestAdd(unittest.TestCase):
@@ -13,7 +11,7 @@ class TestAdd(unittest.TestCase):
     def test_forward_backward(self):
         x0 = Variable(np.array(2.0))
         x1 = Variable(np.array(3.0))
-        with dezero.train():
+        with train():
             y = add(x0, x1)
             y.backward()
         self.assertEqual(np.array(5.0), y.data)
@@ -22,7 +20,7 @@ class TestAdd(unittest.TestCase):
 
     def test_using_same_inputs(self):
         x0 = Variable(np.array(2.0))
-        with dezero.train():
+        with train():
             y = add(x0, x0)
             y.backward()
         self.assertEqual(np.array(4.0), y.data)
@@ -30,14 +28,14 @@ class TestAdd(unittest.TestCase):
 
     def test_clear_gradients(self):
         x0 = Variable(np.array(2.0))
-        with dezero.train():
+        with train():
             y = add(x0, x0)
             y.backward()
         self.assertEqual(np.array(4.0), y.data)
         self.assertEqual(np.array(2.0), x0.grad)
 
         x0.clear_grad()
-        with dezero.train():
+        with train():
             y = add(add(x0, x0), x0)
             y.backward()
         self.assertEqual(np.array(6.0), y.data)
@@ -49,7 +47,7 @@ class TestMul(unittest.TestCase):
     def test_forward_backward(self):
         x0 = Variable(np.array(2.0))
         x1 = Variable(np.array(3.0))
-        with dezero.train():
+        with train():
             y = mul(x0, x1)
             y.backward()
         self.assertEqual(np.array(6.0), y.data)
@@ -67,7 +65,7 @@ class TestSquare(unittest.TestCase):
 
     def test_backward(self):
         x = Variable(np.array(3.0))
-        with dezero.train():
+        with train():
             y = square(x)
             y.backward()
         expected = np.array(6.0)
@@ -75,7 +73,7 @@ class TestSquare(unittest.TestCase):
 
     def test_gradient_check(self):
         x = Variable(np.random.rand(1))
-        with dezero.train():
+        with train():
             y = square(x)
             y.backward()
         num_grad = numerical_diff(Square(), x)
@@ -86,7 +84,7 @@ class TestTopologicalOrder(unittest.TestCase):
 
     def test_forward_backward(self):
         x = Variable(np.array(2.0))
-        with dezero.train():
+        with train():
             a = square(x)
             y = add(square(a), square(a))
             y.backward()
@@ -96,7 +94,7 @@ class TestTopologicalOrder(unittest.TestCase):
     def test_gradients_of_intermediate_layers(self):
         x0 = Variable(np.array(1.0))
         x1 = Variable(np.array(1.0))
-        with dezero.train():
+        with train():
             t = add(x0, x1)
             y = add(x0, t)
             y.backward()
